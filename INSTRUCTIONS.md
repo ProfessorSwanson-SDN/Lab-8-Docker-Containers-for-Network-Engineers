@@ -16,6 +16,19 @@
 - Ansible basics (inventory, playbooks, collections).
 - GitHub Classroom workflow (clone, commit, push, PR).
 
+## Table of Contents
+
+1. [Step 1 — Clone the Repository](#step-1--clone-the-repository)
+2. [Step 2 — Dev Container Check (Optional)](#step-2--dev-container-check-optional)
+3. [Step 3 — Extend FastAPI App](#step-3--extend-fastapi-app)
+4. [Step 4 — Author the Ansible Playbook & Inventory](#step-4--author-the-ansible-playbook--inventory)
+5. [Step 5 — Write the Dockerfile](#step-5--write-the-dockerfile)
+6. [Step 6 — Build the Image](#step-6--build-the-image)
+7. [Step 7 — Run the Container](#step-7--run-the-container)
+8. [Step 8 — Health & Endpoint Tests](#step-8--health--endpoint-tests)
+9. [Step 9 — Trigger Ansible Backup](#step-9--trigger-ansible-backup)
+10. [Step 10 — Finalize & Submit](#step-10--finalize--submit)
+
 ## Overview
 You will containerize your FastAPI webhook service from Lab 6 and extend it with a new endpoint that, when called, runs an Ansible playbook to back up device configurations from the Catalyst 8k and 9k sandboxes. You will write a production-minded Dockerfile, install Python and Ansible dependencies, prepare an inventory and playbook in the image, and expose port 8000. Runtime environment variables provide credentials; a bind-mounted volume preserves backups and logs. You will build, run, and test the container, saving artifacts and log markers for autograding.
 
@@ -24,7 +37,12 @@ You will containerize your FastAPI webhook service from Lab 6 and extend it with
 
 
 ## Resources
-- [Dockerfile reference](https://docs.docker.com/engine/reference/builder/)- [FastAPI](https://fastapi.tiangolo.com/)- [Uvicorn](https://www.uvicorn.org/)- [Ansible docs](https://docs.ansible.com/)- [cisco.ios collection](https://docs.ansible.com/ansible/latest/collections/cisco/ios/)
+
+- [Dockerfile reference](https://docs.docker.com/engine/reference/builder/)
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Uvicorn](https://www.uvicorn.org/)
+- [Ansible docs](https://docs.ansible.com/)
+- [cisco.ios collection](https://docs.ansible.com/ansible/latest/collections/cisco/ios/)
 ## Deliverables
 - `Dockerfile` that builds a runnable image for the FastAPI app.
 - `src/app.py` FastAPI webhook with a new POST path `/backup/ansible`.
