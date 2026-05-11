@@ -1,0 +1,198 @@
+name: GitHub Classroom Autograding
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: FastAPI Webhooks (10)
+        id: webhooks
+        if: always()
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: FastAPI webhooks (existing + new /backup/ansible) (10)
+          setup-command: ''
+          command: >-
+            bash -lc 'set -euo pipefail;
+            LOG_FILE="logs/lab8.log";
+            [[ -f "$LOG_FILE" ]];
+            [[ -f "src/app.py" ]];
+            grep -Fq "WEBHOOKS_OK" "$LOG_FILE";
+            grep -Fiq "X-Webhook-Token" src/app.py;
+            APP_POST=$(grep -Eoc "@app\\.post\\(" src/app.py || true);
+            ROUTER_POST=$(grep -Eoc "@router\\.post\\(" src/app.py || true);
+            TOTAL_POST=$((APP_POST + ROUTER_POST));
+            [[ "$TOTAL_POST" -ge 6 ]];
+            grep -Fq "/backup/ansible" src/app.py'
+          timeout: 10
+          max-score: 10
+
+      - name: Ansible Assets (10)
+        id: ansible_assets
+        if: always()
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Ansible inventory + playbook + requirements (10)
+          setup-command: ''
+          command: >-
+            bash -lc 'set -euo pipefail;
+            LOG_FILE="logs/lab8.log";
+            [[ -f "$LOG_FILE" ]];
+            grep -Fq "ANSIBLE_ASSETS_OK" "$LOG_FILE";
+            [[ -f "requirements.yml" ]];
+            grep -Fq "cisco.ios" requirements.yml;
+            grep -Fq "ansible.netcommon" requirements.yml;
+            INV_FILE=$(find inventories -maxdepth 2 -type f \( -name "*.yml" -o -name "*.yaml" -o -name "inventory" -o -name "hosts" \) | head -n1);
+            [[ -n "$INV_FILE" ]];
+            grep -Fiq "cat8k" "$INV_FILE";
+            grep -Fiq "cat9k" "$INV_FILE";
+            [[ -s "playbooks/backup.yml" ]]'
+          timeout: 10
+          max-score: 10
+
+      - name: Dockerfile (5)
+        id: dockerfile
+        if: always()
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Dockerfile required directives (5)
+          setup-command: ''
+          command: >-
+            bash -lc 'set -euo pipefail;
+            LOG_FILE="logs/lab8.log";
+            [[ -f "$LOG_FILE" ]];
+            grep -Fq "DOCKERFILE_OK" "$LOG_FILE";
+            [[ -f "Dockerfile" ]];
+            grep -Eq "^FROM[[:space:]]+.*python.*3\\.11" Dockerfile;
+            grep -Eq "^EXPOSE[[:space:]]+8000" Dockerfile;
+            grep -Eq "^CMD[[:space:]]" Dockerfile;
+            grep -Eq "pip[[:space:]]+install" Dockerfile'
+          timeout: 10
+          max-score: 5
+
+      - name: Docker Build Transcript (10)
+        id: build
+        if: always()
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Docker build transcript with success keyword (10)
+          setup-command: ''
+          command: >-
+            bash -lc 'set -euo pipefail;
+            LOG_FILE="logs/lab8.log";
+            [[ -f "$LOG_FILE" ]];
+            grep -Fq "BUILD_OK" "$LOG_FILE";
+            [[ -s "data/docker_build.txt" ]];
+            grep -Eiq "(Successfully built|naming to docker.io|writing image sha256|exporting to image)" data/docker_build.txt'
+          timeout: 10
+          max-score: 10
+
+      - name: Docker Run Transcript (5)
+        id: run
+        if: always()
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Docker run transcript with container ID (5)
+          setup-command: ''
+          command: >-
+            bash -lc 'set -euo pipefail;
+            LOG_FILE="logs/lab8.log";
+            [[ -f "$LOG_FILE" ]];
+            grep -Fq "RUN_OK" "$LOG_FILE";
+            [[ -s "data/docker_run.txt" ]];
+            grep -Eq "[0-9a-f]{12,64}" data/docker_run.txt'
+          timeout: 10
+          max-score: 5
+
+      - name: Health Check (5)
+        id: health
+        if: always()
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Service health check (5)
+          setup-command: ''
+          command: >-
+            bash -lc 'set -euo pipefail;
+            LOG_FILE="logs/lab8.log";
+            [[ -f "$LOG_FILE" ]];
+            grep -Fq "HEALTH_OK" "$LOG_FILE"'
+          timeout: 10
+          max-score: 5
+
+      - name: Backup Artifacts (15)
+        id: backup
+        if: always()
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Backup endpoint produced real IOS configs (15)
+          setup-command: ''
+          command: >-
+            bash -lc 'set -euo pipefail;
+            LOG_FILE="logs/lab8.log";
+            [[ -f "$LOG_FILE" ]];
+            grep -Fq "BACKUP_OK" "$LOG_FILE";
+            grep -Fq "BACKUP_FILES_SAVED" "$LOG_FILE";
+            CAT8K_FILE=$(ls data/backups/cat8k* 2>/dev/null | head -n1);
+            CAT9K_FILE=$(ls data/backups/cat9k* 2>/dev/null | head -n1);
+            [[ -n "$CAT8K_FILE" && -s "$CAT8K_FILE" ]];
+            [[ -n "$CAT9K_FILE" && -s "$CAT9K_FILE" ]];
+            grep -Fiq "hostname" "$CAT8K_FILE";
+            grep -Fiq "interface" "$CAT8K_FILE";
+            grep -Fq "!" "$CAT8K_FILE";
+            grep -Fiq "hostname" "$CAT9K_FILE";
+            grep -Fiq "interface" "$CAT9K_FILE";
+            grep -Fq "!" "$CAT9K_FILE"'
+          timeout: 10
+          max-score: 15
+
+      - name: Submission Markers (15)
+        id: submission
+        if: always()
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: LAB8_START + LAB8_END present (15)
+          setup-command: ''
+          command: >-
+            bash -lc 'set -euo pipefail;
+            LOG_FILE="logs/lab8.log";
+            [[ -f "$LOG_FILE" ]];
+            grep -Eq "LAB8[-_]START" "$LOG_FILE";
+            grep -Eq "LAB8[-_]END" "$LOG_FILE"'
+          timeout: 10
+          max-score: 15
+
+      - name: Autograding Reporter
+        if: always()
+        uses: classroom-resources/autograding-grading-reporter@v1
+        env:
+          WEBHOOKS_RESULTS: "${{ steps.webhooks.outputs.result }}"
+          ANSIBLE_ASSETS_RESULTS: "${{ steps.ansible_assets.outputs.result }}"
+          DOCKERFILE_RESULTS: "${{ steps.dockerfile.outputs.result }}"
+          BUILD_RESULTS: "${{ steps.build.outputs.result }}"
+          RUN_RESULTS: "${{ steps.run.outputs.result }}"
+          HEALTH_RESULTS: "${{ steps.health.outputs.result }}"
+          BACKUP_RESULTS: "${{ steps.backup.outputs.result }}"
+          SUBMISSION_RESULTS: "${{ steps.submission.outputs.result }}"
+        with:
+          runners: webhooks,ansible_assets,dockerfile,build,run,health,backup,submission
