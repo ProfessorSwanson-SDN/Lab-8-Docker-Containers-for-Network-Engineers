@@ -195,4 +195,12 @@ jobs:
           BACKUP_RESULTS: "${{ steps.backup.outputs.result }}"
           SUBMISSION_RESULTS: "${{ steps.submission.outputs.result }}"
         with:
-          runners: webhooks,ansible_assets,dockerfile,build,run,health,backup,submission
+          runners: |
+            webhooks
+            ansible_assets
+            dockerfile
+            build
+            run
+            health
+            backup
+            submission
